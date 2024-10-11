@@ -14,5 +14,7 @@ pip install -r requirements.txt
 ### Run
 
 ```shell
-fastapi dev (or run) main.py
+poetry install
+poetry run dev # for dev
+poetry run start # for prod
 ```
