@@ -1,7 +1,6 @@
-import time
-
 from typing import Union
 
+import uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel
 
@@ -28,5 +27,12 @@ def classifier(text: str, config: Union[AIRuntimeConfig, None], job_id: str) -> 
 
 
 @app.post("/verifyJob/{job_id}")
-def verify_job(job_id: str, payload: ClassificationJob):
+async def verify_job(job_id: str, payload: ClassificationJob):
     return classifier(payload.text, payload.config, job_id)
+
+def start_dev():
+    uvicorn.run("mizu_validator.main:app", host="0.0.0.0", port=8000, reload=True)
+
+# the number of workers is defined by $WEB_CONCURRENCY env as default
+def start():
+    uvicorn.run("mizu_validator.main:app", host="0.0.0.0", port=8000)
