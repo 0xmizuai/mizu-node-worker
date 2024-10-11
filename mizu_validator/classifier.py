@@ -1,18 +1,14 @@
 from typing import Counter
 import torch
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, PreTrainedTokenizer
 import torch.nn.functional as F
 
 from optimum.onnxruntime import ORTModelForFeatureExtraction
-
-import json
+from mizu_validator.embeddings.domain_embeddings import DomainEmbedding
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-MiniLM-L6-v2')
 model = ORTModelForFeatureExtraction.from_pretrained('Xenova/all-MiniLM-L6-v2', file_name='onnx/model_quantized.onnx')
-
-domain_to_id = json.load(open('all_domain_to_id_cleaned.json'))
-all_domain_names = list(domain_to_id.keys())
 
 def get_embeddings(texts, tokenizer, model):
     encoded_input = tokenizer(texts, padding=True, truncation=True, return_tensors='pt')
@@ -36,7 +32,8 @@ def mean_pooling(model_output, attention_mask):
 
 
 # each segment is 512 tokens but we need to keep two for [CLS] and [SEP]
-def segment_text(text, tokenizer, max_tokens=510):
+# TODO(wangjun.hong): A optimization can be done is to tokenize with offset
+def segment_text(text, tokenizer: PreTrainedTokenizer, max_tokens=510):
     tokens = tokenizer.tokenize(text)
     segments = []
     current_segment = []
@@ -54,17 +51,16 @@ def segment_text(text, tokenizer, max_tokens=510):
     return segments
 
 
-domain_embedding = get_embeddings(all_domain_names, tokenizer, model)
-def classify(text):    
+def classify(text, domain_embedding: DomainEmbedding, k = 10):    
     segments = segment_text(text, tokenizer)
     all_top_domains = []
 
     for segment in segments:
         text_embedding = get_embeddings([segment], tokenizer, model)
         sims = torch.matmul(
-            domain_embedding, text_embedding.transpose(1, 0)).squeeze()
+            domain_embedding.embeddings, text_embedding.transpose(1, 0)).squeeze()
         top_indices = torch.topk(sims, k=k).indices.data.cpu().numpy().tolist()
-        top_domains = [all_domain_names[idx] for idx in top_indices]
+        top_domains = [domain_embedding.domains[idx] for idx in top_indices]
         all_top_domains.extend(top_domains)
 
     # Count the occurrences of each domain
