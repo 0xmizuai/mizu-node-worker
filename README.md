@@ -9,6 +9,7 @@
 git clone <this repo> validator
 cd validator
 poetry install
+poetry run pre-commit install
 ```
 
 ### Run
