@@ -28,7 +28,7 @@ async def do_classify(job: ClassificationJob):
     tags = classify(job.text, V1_EMBEDDING)
     requests.post(
         job.config.callback_url,
-        data={"job_id": job.job_id, "tags": tags},
+        json={"job_id": job.job_id, "tags": tags},
     )
 
 
