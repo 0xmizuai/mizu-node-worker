@@ -24,7 +24,7 @@ class ClassificationJob(BaseModel):
 
 
 @app.post("/classify")
-async def do_classify(job: ClassificationJob):
+def do_classify(job: ClassificationJob):
     tags = classify(job.text, V1_EMBEDDING)
     requests.post(
         job.config.callback_url,
