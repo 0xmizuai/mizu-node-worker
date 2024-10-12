@@ -56,7 +56,7 @@ def segment_text(text, tokenizer: PreTrainedTokenizer, max_tokens=510):
     return segments
 
 
-def classify(text, domain_embedding: DomainEmbedding, k=10) -> set[str]:
+def classify(text, domain_embedding: DomainEmbedding, k=10) -> list[str]:
     segments = segment_text(text, tokenizer)
     all_top_domains = []
 
@@ -73,5 +73,4 @@ def classify(text, domain_embedding: DomainEmbedding, k=10) -> set[str]:
     domain_counts = Counter(all_top_domains)
 
     # Get the k most common domains
-    most_common_domains = [domain for domain, _ in domain_counts.most_common(k)]
-    return set(most_common_domains)
+    return [domain for domain, _ in domain_counts.most_common(k)]
