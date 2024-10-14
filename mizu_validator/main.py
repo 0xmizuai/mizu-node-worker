@@ -2,6 +2,7 @@ from typing import Union
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 
 from mizu_validator.embeddings.domain_embeddings import V1_EMBEDDING
@@ -23,12 +24,18 @@ class ClassificationJob(BaseModel):
     config: Union[AIRuntimeConfig, None] = None
 
 
+class ClassificationResult(BaseModel):
+    job_id: str
+    tags: list[str]
+
+
 @app.post("/classify")
-async def do_classify(job: ClassificationJob):
+def do_classify(job: ClassificationJob):
     tags = classify(job.text, V1_EMBEDDING)
+    reply = ClassificationResult(job_id=job.job_id, tags=tags)
     requests.post(
         job.config.callback_url,
-        data={"job_id": job.job_id, "tags": tags},
+        json=jsonable_encoder(reply),
     )
 
 
