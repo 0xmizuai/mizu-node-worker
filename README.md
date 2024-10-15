@@ -17,13 +17,20 @@ poetry run pre-commit install
 The environment variable `REDIS_URL` controls where the job requests are queued.  
 If not set, it defaults to `localhost:6379`.
 
-Start the http server:
+#### Start the http server:
 ```shell
 poetry run dev # for dev
 poetry run start # for prod
 ```
 
-Start a RQ worker
+#### Start a RQ worker
+
+The worker needs additional enironment variables to access R2:
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- CLOUDFLARE_R2_ID
+- CLOUDFLARE_R2_BUCKET_NAME
+
 ```shell
 poetry run start_worker
 ```

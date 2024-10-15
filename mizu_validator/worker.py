@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from mizu_validator.classifier import classify
 from mizu_validator.embeddings.domain_embeddings import V1_EMBEDDING
+from mizu_validator.r2 import get_decoded_value
 
 
 class AIRuntimeConfig(BaseModel):
@@ -14,7 +15,7 @@ class AIRuntimeConfig(BaseModel):
 
 class ClassificationJob(BaseModel):
     job_id: str
-    text: str
+    r2_key: str
     config: AIRuntimeConfig | None = None
 
 
@@ -24,7 +25,8 @@ class ClassificationResult(BaseModel):
 
 
 def classification_worker(job: ClassificationJob):
-    tags = classify(job.text, V1_EMBEDDING)
+    text = get_decoded_value(job.r2_key)
+    tags = classify(text, V1_EMBEDDING)
     reply = ClassificationResult(job_id=job.job_id, tags=tags)
     requests.post(
         job.config.callback_url,
