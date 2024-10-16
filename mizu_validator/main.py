@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from redis import Redis
 from rq import Queue, Worker
 
-import mizu_validator.worker as worker
+from mizu_validator import job_worker, WorkerJob
 
 # HTTP server entry point
 app = FastAPI()
@@ -18,18 +18,18 @@ queue = Queue(queue_name, connection=redis_conn)
 
 
 @app.post("/classify")
-def do_classify(job: worker.ClassificationJob):
-    job = queue.enqueue(worker.classification_worker, job)
+def do_classify(job: WorkerJob):
+    job = queue.enqueue(job_worker, job)
     return {"job_id": job.id, "status": "Job enqueued"}
 
 
 def start_dev():
-    uvicorn.run("mizu_validator.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("mizu_validator.main:app", host="0.0.0.0", port=8001, reload=True)
 
 
 # the number of workers is defined by $WEB_CONCURRENCY env as default
 def start():
-    uvicorn.run("mizu_validator.main:app", host="0.0.0.0", port=8000)
+    uvicorn.run("mizu_validator.main:app", host="0.0.0.0", port=8001)
 
 
 def start_worker():

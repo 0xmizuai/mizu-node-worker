@@ -1,3 +1,4 @@
+from enum import Enum
 import requests
 
 from fastapi.encoders import jsonable_encoder
@@ -8,27 +9,30 @@ from mizu_validator.embeddings.domain_embeddings import V1_EMBEDDING
 from mizu_validator.r2 import get_decoded_value
 
 
-class AIRuntimeConfig(BaseModel):
-    debug: bool = False
+class JobType(str, Enum):
+    pow = "pow"
+    classification = "classification"
+
+
+class WorkerJob(BaseModel):
+    job_id: str
+    job_type: JobType
+    input: str
     callback_url: str = None
 
 
-class ClassificationJob(BaseModel):
+class WorkerJobResult(BaseModel):
     job_id: str
-    r2_key: str
-    config: AIRuntimeConfig | None = None
+    output: str | list[str]
 
 
-class ClassificationResult(BaseModel):
-    job_id: str
-    tags: list[str]
-
-
-def classification_worker(job: ClassificationJob):
-    text = get_decoded_value(job.r2_key)
-    tags = classify(text, V1_EMBEDDING)
-    reply = ClassificationResult(job_id=job.job_id, tags=tags)
-    requests.post(
-        job.config.callback_url,
-        json=jsonable_encoder(reply),
-    )
+def job_worker(job: WorkerJob):
+    if job.job_type == JobType.classification:
+        text = get_decoded_value(job.input)
+        tags = classify(text, V1_EMBEDDING)
+        requests.post(
+            job.callback_url,
+            json=jsonable_encoder(WorkerJobResult(job_id=job.job_id, output=tags)),
+        )
+    else:
+        raise NotImplementedError(f"Job type {job.job_type} not implemented")
