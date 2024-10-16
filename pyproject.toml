@@ -19,6 +19,8 @@ optimum = "^1.23.1"
 onnxruntime = "^1.19.2"
 onnx = "^1.17.0"
 
+rq = "^1.16.2"
+boto3 = "^1.35.40"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"
 pre-commit = "^4.0.1"
@@ -32,3 +34,4 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 dev = "mizu_validator.main:start_dev"
 start = "mizu_validator.main:start"
+worker = "mizu_validator.main:start_worker"

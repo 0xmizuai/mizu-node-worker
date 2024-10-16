@@ -1,42 +1,26 @@
-from typing import Union
-
+import os
 import uvicorn
+
 from fastapi import FastAPI
-from fastapi.encoders import jsonable_encoder
-from pydantic import BaseModel
+from redis import Redis
+from rq import Queue, Worker
 
-from mizu_validator.embeddings.domain_embeddings import V1_EMBEDDING
-from mizu_validator.classifier import classify
+import mizu_validator.worker as worker
 
-import requests
-
+# HTTP server entry point
 app = FastAPI()
 
-
-class AIRuntimeConfig(BaseModel):
-    debug: bool = False
-    callback_url: str = None
-
-
-class ClassificationJob(BaseModel):
-    job_id: str
-    text: str
-    config: Union[AIRuntimeConfig, None] = None
-
-
-class ClassificationResult(BaseModel):
-    job_id: str
-    tags: list[str]
+# Redis configuration
+redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+redis_conn = Redis.from_url(redis_url)
+queue_name = "classification_jobs"
+queue = Queue(queue_name, connection=redis_conn)
 
 
 @app.post("/classify")
-def do_classify(job: ClassificationJob):
-    tags = classify(job.text, V1_EMBEDDING)
-    reply = ClassificationResult(job_id=job.job_id, tags=tags)
-    requests.post(
-        job.config.callback_url,
-        json=jsonable_encoder(reply),
-    )
+def do_classify(job: worker.ClassificationJob):
+    job = queue.enqueue(worker.classification_worker, job)
+    return {"job_id": job.id, "status": "Job enqueued"}
 
 
 def start_dev():
@@ -46,3 +30,8 @@ def start_dev():
 # the number of workers is defined by $WEB_CONCURRENCY env as default
 def start():
     uvicorn.run("mizu_validator.main:app", host="0.0.0.0", port=8000)
+
+
+def start_worker():
+    worker = Worker([queue_name], connection=redis_conn)
+    worker.work()
