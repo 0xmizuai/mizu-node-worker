@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from redis import Redis
 from rq import Queue, Worker
 
-from mizu_validator import job_worker, WorkerJob
+from mizu_validator.worker import job_worker, WorkerJob
 
 # HTTP server entry point
 app = FastAPI()
