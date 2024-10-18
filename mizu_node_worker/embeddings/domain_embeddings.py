@@ -11,7 +11,7 @@ class DomainEmbedding(BaseModel):
 
 def load_embedding(version: str) -> DomainEmbedding:
     # Load pre trained domain embedding based on version
-    pre_trained_domain_embeddings = json.load(open(f"./mizu_validator/embeddings/sources/{version}.json"))
+    pre_trained_domain_embeddings = json.load(open(f"./mizu_node_worker/embeddings/sources/{version}.json"))
 
     # The domain embeddings is a list of object of type:
     # {

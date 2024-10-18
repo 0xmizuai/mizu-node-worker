@@ -4,7 +4,7 @@ from transformers import AutoTokenizer, PreTrainedTokenizer
 import torch.nn.functional as F
 
 from optimum.onnxruntime import ORTModelForFeatureExtraction
-from mizu_validator.embeddings.domain_embeddings import DomainEmbedding
+from mizu_node_worker.embeddings.domain_embeddings import DomainEmbedding
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")

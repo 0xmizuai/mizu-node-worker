@@ -8,6 +8,7 @@
 ```shell
 git clone <this repo> validator
 cd validator
+poetry env use 3.9
 poetry install
 poetry run pre-commit install
 ```
@@ -25,15 +26,11 @@ poetry run start # for prod
 
 #### Start workers
 
-The worker needs additional environment variables to access R2:
-- AWS_ACCESS_KEY_ID
-- AWS_SECRET_ACCESS_KEY
-- CLOUDFLARE_R2_ID
-- CLOUDFLARE_R2_BUCKET_NAME
-- REDIS_URL
-- REDIS_QUEUE
 
-`REDIS_QUEUE` is needed only by standard worker and not rq_worker. It's an error if not set
+- REDIS_URL
+- REDIS_QUEUE_NAME
+
+`REDIS_QUEUE_NAME` is needed only by standard worker and not rq_worker. It's an error if not set
 
 ```shell
 poetry run start_worker  # to start a standard worker
