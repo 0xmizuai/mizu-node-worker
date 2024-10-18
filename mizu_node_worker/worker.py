@@ -2,7 +2,6 @@ from enum import Enum
 from typing import Union
 import requests
 
-from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 
 from mizu_node_worker.classifier import classify

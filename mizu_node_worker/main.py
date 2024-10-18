@@ -15,7 +15,7 @@ app = FastAPI()
 # Redis configuration
 redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
 redis_conn = Redis.from_url(redis_url)
-queue_name = os.environ.get("REDIS_QUEUE", "verify_job_queue")
+queue_name = os.environ.get("REDIS_QUEUE_NAME", "verify_job_queue")
 rq_queue_name = "rq_" + queue_name
 rq_queue = Queue(rq_queue_name, connection=redis_conn)
 
