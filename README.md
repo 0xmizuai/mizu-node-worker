@@ -8,6 +8,7 @@
 ```shell
 git clone <this repo> validator
 cd validator
+poetry env use 3.9
 poetry install
 poetry run pre-commit install
 ```
