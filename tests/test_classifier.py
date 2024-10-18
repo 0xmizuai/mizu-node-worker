@@ -1,5 +1,5 @@
-from mizu_validator.classifier import classify
-from mizu_validator.embeddings.domain_embeddings import V1_EMBEDDING
+from mizu_node_worker.classifier import classify
+from mizu_node_worker.embeddings.domain_embeddings import V1_EMBEDDING
 
 def test_classify():
     # Given

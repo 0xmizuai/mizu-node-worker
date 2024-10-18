@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "mizu_validator"
+name = "mizu_node_worker"
 version = "0.1.0"
 description = ""
 authors = ["shudong <dongs2011@gmail.com>"]
@@ -33,7 +33,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-dev = "mizu_validator.main:start_dev"
-start = "mizu_validator.main:start"
-rq_worker = "mizu_validator.main:start_rq_worker"
-worker = "mizu_validator.main:start_worker"
+dev = "mizu_node_worker.main:start_dev"
+start = "mizu_node_worker.main:start"
+rq_worker = "mizu_node_worker.main:start_rq_worker"
+worker = "mizu_node_worker.main:start_worker"

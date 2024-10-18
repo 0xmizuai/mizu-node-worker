@@ -4,9 +4,9 @@ import requests
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 
-from mizu_validator.classifier import classify
-from mizu_validator.embeddings.domain_embeddings import V1_EMBEDDING
-from mizu_validator.r2 import get_decoded_value
+from mizu_node_worker.classifier import classify
+from mizu_node_worker.embeddings.domain_embeddings import V1_EMBEDDING
+from mizu_node_worker.r2 import get_decoded_value
 
 
 class JobType(str, Enum):
