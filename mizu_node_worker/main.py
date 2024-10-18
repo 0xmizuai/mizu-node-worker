@@ -1,11 +1,13 @@
+from asyncio import sleep
 import os
+from fastapi.encoders import jsonable_encoder
 import uvicorn
 
-from fastapi import FastAPI
+from fastapi import FastAPI, requests
 from redis import Redis
 from rq import Queue, Worker
 
-from mizu_node_worker.worker import job_worker, WorkerJob
+from mizu_node_worker.worker import process_job_no_throw, WorkerJob
 
 # HTTP server entry point
 app = FastAPI()
@@ -13,14 +15,14 @@ app = FastAPI()
 # Redis configuration
 redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
 redis_conn = Redis.from_url(redis_url)
-rq_queue_name = "classification_jobs"
-redis_queue = os.environ["REDIS_QUEUE"]  # raise exception if not present
-queue = Queue(rq_queue_name, connection=redis_conn)
+queue_name = os.environ.get("REDIS_QUEUE", "verify_job_queue")
+rq_queue_name = "rq_" + queue_name
+rq_queue = Queue(rq_queue_name, connection=redis_conn)
 
 
 @app.post("/classify")
 def do_classify(job: WorkerJob):
-    job = queue.enqueue(job_worker, job)
+    job = rq_queue.enqueue(process_job_no_throw, job)
     return {"job_id": job.id, "status": "Job enqueued"}
 
 
@@ -39,11 +41,17 @@ def start_rq_worker():
 
 
 def start_worker():
-    p = redis_conn.pubsub()
-    p.subscribe(redis_queue)
-    for message in p.listen():
+    print("Starting worker...")
+    while True:
         try:
-            worker_job = WorkerJob.parse_obj(message)
-            job_worker(worker_job)
+            message = redis_conn.brpop(queue_name)
+            job = WorkerJob.model_validate(message)
+            result = process_job_no_throw(job)
+            requests.post(
+                job.callback_url,
+                json=jsonable_encoder(result),
+            )
         except Exception as e:
-            print(e)
+            print(f"Error processing job: {e}")
+            sleep(5000)
+

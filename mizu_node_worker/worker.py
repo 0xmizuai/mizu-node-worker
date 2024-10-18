@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Union
 import requests
 
 from fastapi.encoders import jsonable_encoder
@@ -22,16 +23,22 @@ class WorkerJob(BaseModel):
 
 class WorkerJobResult(BaseModel):
     job_id: str
-    output: str | list[str]
+    output: Union[str, list[str]]
 
 
-def job_worker(job: WorkerJob):
-    if job.job_type == JobType.classification:
-        text = requests.get(job.input).json()
-        tags = classify(text, V1_EMBEDDING)
-        requests.post(
-            job.callback_url,
-            json=jsonable_encoder(WorkerJobResult(job_id=job.job_id, output=tags)),
-        )
-    else:
-        raise NotImplementedError(f"Job type {job.job_type} not implemented")
+class WorkerJobError(BaseModel):
+    message: str
+
+
+def process_job_no_throw(job: WorkerJob):
+    try:
+        if job.job_type == JobType.classification:
+            text = requests.get(job.input).json()
+            tags = classify(text, V1_EMBEDDING)
+            return WorkerJobResult(job_id=job.job_id, output=tags)
+        else:
+            print(f"Error: invalid job type: " + job.job_type)
+            return WorkerJobError(message="unknown job type")
+    except Exception as e:
+        print(f"Error: {e}")
+        return WorkerJobError(message=str(e))
