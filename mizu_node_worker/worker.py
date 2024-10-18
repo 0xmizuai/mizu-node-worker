@@ -6,7 +6,6 @@ from pydantic import BaseModel
 
 from mizu_node_worker.classifier import classify
 from mizu_node_worker.embeddings.domain_embeddings import V1_EMBEDDING
-from mizu_node_worker.r2 import get_decoded_value
 
 
 class JobType(str, Enum):
@@ -28,7 +27,7 @@ class WorkerJobResult(BaseModel):
 
 def job_worker(job: WorkerJob):
     if job.job_type == JobType.classification:
-        text = get_decoded_value(job.input)
+        text = requests.get(job.input).json()
         tags = classify(text, V1_EMBEDDING)
         requests.post(
             job.callback_url,
