@@ -9,11 +9,12 @@ readme = "README.md"
 python = ">=3.11,<3.13"
 fastapi = "^0.115.0"
 uvicorn = "^0.31.1"
-torch = [
-  { markers = "sys_platform == 'darwin' and platform_machine == 'arm64'", url = "https://download.pytorch.org/whl/cpu/torch-2.4.1-cp311-none-macosx_11_0_arm64.whl" },
-  { markers = "sys_platform == 'darwin' and platform_machine == 'x86_64'", url = "https://download.pytorch.org/whl/cpu/torch-2.2.2-cp311-none-macosx_10_9_x86_64.whl" },
-  { markers = "sys_platform == 'linux'", version = "2.4.1", source = "pypi" }
-]
+torch = "^2.4.1"
+# torch = [
+#   { markers = "sys_platform == 'darwin' and platform_machine == 'arm64'", url = "https://download.pytorch.org/whl/cpu/torch-2.4.1-cp311-none-macosx_11_0_arm64.whl" },
+#   { markers = "sys_platform == 'darwin' and platform_machine == 'x86_64'", url = "https://download.pytorch.org/whl/cpu/torch-2.2.2-cp311-none-macosx_10_9_x86_64.whl" },
+#   { markers = "sys_platform == 'linux'", version = "2.4.1", source = "pypi" }
+# ]
 transformers = "^4.45.2"
 optimum = "^1.23.1"
 onnxruntime = "^1.19.2"
@@ -22,6 +23,7 @@ rq = "^1.16.2"
 boto3 = "^1.35.40"
 redis = "^5.1.1"
 numpy = "1.26"
+python-dotenv = "^1.0.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"
@@ -38,3 +40,6 @@ dev = "mizu_node_worker.main:start_dev"
 start = "mizu_node_worker.main:start"
 rq_worker = "mizu_node_worker.main:start_rq_worker"
 worker = "mizu_node_worker.main:start_worker"
+
+start_worker = "mizu_node_worker.run:start_worker"
+start_validator = "mizu_node_worker.run:start_validator"

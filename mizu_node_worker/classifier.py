@@ -6,7 +6,17 @@ import torch.nn.functional as F
 from optimum.onnxruntime import ORTModelForFeatureExtraction
 from mizu_node_worker.embeddings.domain_embeddings import DomainEmbedding
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+    print("CUDA Enabled")
+elif torch.backends.mps.is_available():
+    device = torch.device("mps")
+    print("MPS Enabled")
+else:
+    device = torch.device("cpu")
+    print("Using CPU")
+
+
 tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
 model = ORTModelForFeatureExtraction.from_pretrained(
     "Xenova/all-MiniLM-L6-v2", file_name="onnx/model_quantized.onnx"
