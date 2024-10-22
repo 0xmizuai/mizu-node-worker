@@ -1,3 +1,4 @@
+from time import sleep
 import requests
 import json
 import logging
@@ -24,17 +25,17 @@ def run(take_job_url: str, finish_job_url: str, jwt: str):
             response.raise_for_status()  # Raises an HTTPError if status is 4xx, 5xx
             response_data = response.json()
 
-            print(response_data)
-
             job = response_data['data']['job']
             logging.info("Job Pulled. Processing now")
 
             job_type = job["jobType"]
-            r2_url = job["r2Url"]
 
+            # sanity check
             if job_type != 1:
                 logging.warning("Job type not supported")
                 continue
+
+            r2_url = job["classifyCtx"]["r2Url"]
 
             job_id = job["id"]
             raw_data_str = requests.get(r2_url).content
@@ -42,13 +43,14 @@ def run(take_job_url: str, finish_job_url: str, jwt: str):
 
             # Classify the data
             tags = classify(raw_data['text'], V1_EMBEDDING)
-            tags_str = json.dumps(tags)
 
             # Post the result back to finish the job with signature and author
             logging.info("Classified. Posting Result Now")
             finish_response = requests.post(finish_job_url, headers=headers, json={
                 "jobId": job_id,
-                "result": tags_str,
+                "jobType": job_type,
+                "powResult": None,
+                "classifyResult": tags,
             })
             finish_response.raise_for_status()  # Ensure the finish job request is successful
             logging.info("Job Done")
@@ -63,6 +65,7 @@ def run(take_job_url: str, finish_job_url: str, jwt: str):
 
         except KeyError as e:
             logging.error(f"Missing key in the response data: {e}")
+            sleep(10)
             continue
 
         except Exception as e:
@@ -72,7 +75,7 @@ def run(take_job_url: str, finish_job_url: str, jwt: str):
 
 base_url = os.environ.get("BASE_URL", "https://new-node.voda.build")
 # "http://localhost:3033"
-jwt = os.environ.get("JWT", "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJtaXp1LWFkbWluIiwiaWF0IjoxNzI5MjQ4MTg5LCJleHAiOjE3MjkzMzQ1ODl9.NNmz5ZL3RsqrFfpBQbANmSJzMv9OtDY7c8sOi_Y5bYJ_UXJpv_y1N9LbVsAujK62BSnlKVp20vXae3L_mKacBQ")
+jwt = os.environ.get("JWT", "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzA4MDY2MjIsImlhdCI6MTcyOTU5NzAyMiwic3ViIjoibWl6dS13b3JrZXIifQ.TQICLR9wDHQdiuOIT0C-3tzRkV_vEtXUOYxWv3V_FVMnx5wyFNGSqugzSRDmd9Gh7yRhRlBNdBNE3zIQPVrYAg")
 
 def start_worker():
     run(
